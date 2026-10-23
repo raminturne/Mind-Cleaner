@@ -1,0 +1,10 @@
+/target
+/src-tauri/target
+/src-tauri/gen
+node_modules
+/data
+/release-old
+*.exe
+*.corrupt-*.json
+.env
+*.log

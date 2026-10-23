@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindCleaner</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app" id="appRoot">
+    <div id="zenExitHint" class="zen-exit-hint hidden">Focus Mode · Press Esc to exit</div>
+
+    <!-- Title bar (NotePrompt style) -->
+    <header class="titlebar" id="titlebar">
+      <div class="titlebar-left">
+        <div class="brand" id="brandDrag">
+          <span class="brand-dot"></span>
+          <span class="brand-name">mindcleaner</span>
+        </div>
+
+        <!-- Theme quick toggle chip (Black / White) -->
+        <button id="themeChip" class="profile-chip" title="Toggle Dark / Light Theme">
+          <span class="profile-avatar" id="themeAvatar">D</span>
+          <span class="profile-chip-name" id="themeChipName">Dark</span>
+        </button>
+
+        <!-- Layout mode quick-switcher chip -->
+        <button id="layoutChip" class="profile-chip" title="Default Branch Layout">
+          <span class="profile-chip-name" id="layoutChipName">↔ Balanced</span>
+          <svg viewBox="0 0 24 24" width="10" height="10" class="profile-chip-caret" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <!-- Quick AI Mind Map Trigger in Titlebar -->
+        <button id="aiTopChip" class="profile-chip ai-chip" title="Generate Mind Map with AI (Ctrl+G)">
+          <span>✨</span>
+          <span class="profile-chip-name" id="aiTopChipLabel">AI Mind Map</span>
+        </button>
+
+        <span id="autosaveBadge" class="autosave-pill" title="Auto-save active">saved ✓</span>
+      </div>
+
+      <div class="win-controls">
+        <button id="undoBtn" class="win-btn" title="Undo (Ctrl+Z)" disabled>
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+            <path d="M9 14L4 9l5-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button id="redoBtn" class="win-btn" title="Redo (Ctrl+Y)" disabled>
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+            <path d="M15 14l5-5-5-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5v0A5.5 5.5 0 0 0 9.5 20H13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button id="railToggleBtn" class="win-btn" title="Toggle Sidebar (Ctrl+\)">
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/>
+            <line x1="9" y1="5" x2="9" y2="19" stroke="currentColor" stroke-width="1.7"/>
+            <polyline points="13.4 9.4 15.9 12 13.4 14.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button id="zenBtn" class="win-btn" title="Focus Mode (Ctrl+Shift+F)">
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+            <path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9M20 9V5.5A1.5 1.5 0 0 0 18.5 4H15M4 15v3.5A1.5 1.5 0 0 0 5.5 20H9M20 15v3.5A1.5 1.5 0 0 1 18.5 20H15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button id="searchBtn" class="win-btn" title="Find in Map (Ctrl+F)">
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.7"/>
+            <line x1="16" y1="16" x2="21" y2="21" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button id="settingsBtn" class="win-btn" title="Settings & AI">
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+            <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+        </button>
+        <button id="pinBtn" class="win-btn" title="Always on Top">
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+            <path class="pin-shape" d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            <line x1="12" y1="17" x2="12" y2="22" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button id="fullscreenBtn" class="win-btn" title="Fullscreen (F11)">
+          <svg class="fs-icon" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+            <path d="M15 3h6v6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 21H3v-6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M21 3l-7 7M3 21l7-7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+          <svg class="fs-exit-icon" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+            <path d="M4 14h6v6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M20 10h-6V4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14 10l7-7M10 14l-7 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button id="minBtn" class="win-btn" title="Minimize">
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button id="maxBtn" class="win-btn" title="Maximize">
+          <svg class="max-icon" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+            <rect x="5" y="5" width="14" height="14" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.7"/>
+          </svg>
+          <svg class="restore-icon" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+            <rect x="4" y="8" width="12" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.7"/>
+            <path d="M8 8V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button id="closeBtn" class="win-btn win-btn--close" title="Close">
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+            <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Body (NotePrompt Left Rail + Main Canvas + Statusbar) -->
+    <div class="body">
+      <nav class="rail" id="rail">
+        <button id="addBoardBtn" class="add-btn" title="New Mind Map (Ctrl+T)">
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span id="lblNewMap">new map</span>
+        </button>
+
+        <div class="rail-tools" id="railTools">
+          <button id="btnAiPrompt" class="templates-btn ai-rail-btn" title="Generate Mind Map with AI (Ctrl+G)">
+            <span>✨</span>
+            <span id="lblAiGenerator">ai mind map</span>
+          </button>
+          <button id="btnAutoArrange" class="templates-btn" title="Auto-align all branches">
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+              <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M12 3v4M12 17v4M3 12h4M17 12h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <span id="lblAutoLayout">auto layout</span>
+          </button>
+          <button id="btnOpenFile" class="templates-btn" title="Open Mind Map (.json)">
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+              <path d="M3 7v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+            </svg>
+            <span id="lblOpenFile">open file</span>
+          </button>
+          <button id="btnSaveFile" class="templates-btn" title="Save Mind Map (.json)">
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+              <polyline points="17 21 17 13 7 13 7 21" fill="none" stroke="currentColor" stroke-width="1.7"/>
+            </svg>
+            <span id="lblSaveFile">save json</span>
+          </button>
+          <button id="btnExportPng" class="templates-btn" title="Export entire Mind Map as PNG">
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/>
+              <circle cx="8.5" cy="9.5" r="1.5" fill="currentColor"/>
+              <path d="M21 15l-5-5L5 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span id="lblExportPng">export png</span>
+          </button>
+          <button id="btnExportMd" class="templates-btn" title="Export Mind Map as Markdown outline">
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+              <rect x="2.5" y="5" width="19" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/>
+              <path d="M6 15V9l3 3.5L12 9v6M16 9v6m0 0l-2-2m2 2l2-2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span id="lblExportMd">export markdown</span>
+          </button>
+          <button id="btnHelpModal" class="templates-btn" title="Shortcuts & Guide">
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/>
+              <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              <circle cx="12" cy="17" r="1" fill="currentColor"/>
+            </svg>
+            <span id="lblShortcuts">shortcuts</span>
+          </button>
+        </div>
+
+        <button id="railFold" class="rail-fold" type="button" aria-expanded="true" title="Fold / Unfold tools">
+          <span class="rail-fold-line"></span>
+          <svg class="rail-fold-chev" viewBox="0 0 24 24" width="11" height="11" aria-hidden="true">
+            <polyline points="6 15 12 9 18 15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="rail-fold-line"></span>
+        </button>
+
+        <div class="tab-group-label" id="lblMapsGroup">MIND MAPS</div>
+        <div class="tab-list" id="tabList"></div>
+      </nav>
+
+      <!-- Resize handle -->
+      <div id="railResizer" class="rail-resizer" title="Drag to resize sidebar"></div>
+
+      <!-- Main Editor / Canvas Column -->
+      <main class="editor">
+        <div class="editor-body">
+          <div class="editor-col">
+            <!-- Find Bar -->
+            <div id="findBar" class="find-bar hidden">
+              <div class="find-row">
+                <input id="findInput" class="find-input" type="text" placeholder="Search branches..." spellcheck="false" autocomplete="off" />
+                <button id="findPrev" class="find-nav" title="Previous (Shift+Enter)">
+                  <svg viewBox="0 0 24 24" width="12" height="12"><polyline points="18 15 12 9 6 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+                </button>
+                <button id="findNext" class="find-nav" title="Next (Enter)">
+                  <svg viewBox="0 0 24 24" width="12" height="12"><polyline points="6 9 12 15 18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+                </button>
+                <span id="findCount" class="find-count">0/0</span>
+                <button id="findClose" class="find-close" title="Close (Esc)">
+                  <svg viewBox="0 0 24 24" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Infinite Mind Map Canvas -->
+            <div id="canvasViewport" class="canvas-viewport">
+              <div id="canvasGrid" class="canvas-grid"></div>
+              <div id="canvasWorld" class="canvas-world">
+                <svg id="connectionsSvg" class="connections-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+                <div id="nodesLayer" class="nodes-layer"></div>
+              </div>
+
+              <!-- Multi-Select Rubber-band Marquee -->
+              <div id="selectionMarquee" class="selection-marquee hidden"></div>
+
+              <!-- Canvas Drop Hint Banner when dragging files or nodes -->
+              <div id="canvasDropHint" class="canvas-drop-hint hidden">
+                Drop on any <b>+</b> side (← → ↑ ↓) to place or move there!
+              </div>
+
+              <!-- Floating Zoom & Tool Stepper on Canvas Bottom-Left -->
+              <div class="canvas-hud">
+                <button id="selectModeBtn" class="hud-btn" title="Multi-Select Box Mode (or hold Shift + Drag)">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="3 3"/>
+                    <path d="M9 12l2 2 4-4"/>
+                  </svg>
+                </button>
+                <button id="tidyCanvasBtn" class="hud-btn" title="Auto-Align & Tidy Straight">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="9" width="6" height="6" rx="1"/>
+                    <rect x="15" y="4" width="6" height="4" rx="1"/>
+                    <rect x="15" y="10" width="6" height="4" rx="1"/>
+                    <rect x="15" y="16" width="6" height="4" rx="1"/>
+                    <path d="M9 12h6M12 12V6h3M12 12v6h3"/>
+                  </svg>
+                </button>
+                <span class="hud-sep"></span>
+                <button id="zoomOutBtn" class="hud-btn" title="Zoom Out">−</button>
+                <span id="zoomLabel" class="hud-zoom" title="Reset Zoom (100%)">100%</span>
+                <button id="zoomInBtn" class="hud-btn" title="Zoom In">+</button>
+                <button id="zoomFitBtn" class="hud-btn" title="Fit to Screen">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 9V5h4M20 9V5h-4M4 15v4h4M20 15v4h-4"/>
+                  </svg>
+                </button>
+                <button id="expandAllBtn" class="hud-btn" title="Expand All Branches">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <line x1="12" y1="8" x2="12" y2="16"/>
+                    <line x1="8" y1="12" x2="16" y2="12"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Statusbar (NotePrompt exact style) -->
+        <footer class="statusbar" id="statusbar">
+          <div class="counts">
+            <span id="statNodes">1 node</span>
+            <span class="dot-sep">·</span>
+            <span id="statTasks">0 tasks</span>
+            <span class="dot-sep">·</span>
+            <span id="statDirection">balanced</span>
+          </div>
+
+          <div class="status-actions">
+            <div class="toolbar-main">
+              <button id="actAiGenerate" class="copy-btn copy-btn--wide" title="Generate branches with AI (Ctrl+G)">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3L12 3z"/></svg>
+                <span class="btn-label" id="lblActAi">AI Map</span>
+              </button>
+
+              <button id="actAddChild" class="copy-btn" title="Add Sub-branch (Tab)">
+                <svg viewBox="0 0 24 24" width="12" height="12"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <span class="btn-label" id="lblActChild">Sub-branch</span>
+              </button>
+
+              <button id="actAddSibling" class="copy-btn" title="Add Sibling Branch (Enter)">
+                <svg viewBox="0 0 24 24" width="12" height="12"><path d="M6 3v12a3 3 0 0 0 3 3h9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><polyline points="14 14 18 18 14 22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="btn-label" id="lblActSibling">Sibling</span>
+              </button>
+
+              <button id="actTodo" class="copy-btn" title="Toggle Todo Checkbox">
+                <svg viewBox="0 0 24 24" width="12" height="12"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><polyline points="8 12 11 15 16 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="btn-label" id="lblActTodo">Todo</span>
+              </button>
+
+              <button id="actNote" class="copy-btn" title="Add / Edit Note">
+                <svg viewBox="0 0 24 24" width="12" height="12"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><line x1="8" y1="13" x2="16" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="17" x2="13" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <span class="btn-label" id="lblActNote">Note</span>
+              </button>
+
+              <button id="actAlign" class="copy-btn" title="Align Text (Auto / Right / Center / Left)">
+                <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">
+                  <line x1="4" y1="7" x2="20" y2="7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                  <line id="alignIconMid" x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                  <line x1="4" y1="17" x2="20" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+                <span class="btn-label" id="lblActAlign">Auto</span>
+              </button>
+
+              <button id="actImage" class="copy-btn" title="Attach Image (or Drag & Drop)">
+                <svg viewBox="0 0 24 24" width="12" height="12"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="9.5" r="1.5" fill="currentColor"/><path d="M21 15l-5-5L5 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="btn-label" id="lblActImage">Image</span>
+              </button>
+
+              <button id="actVideo" class="copy-btn" title="Attach Video (or Drag & Drop)">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><polygon points="22 7 17 12 22 17 22 7"/></svg>
+                <span class="btn-label" id="lblActVideo">Video</span>
+              </button>
+
+              <button id="actVoice" class="copy-btn" title="Attach or Record Voice / Audio">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                <span class="btn-label" id="lblActVoice">Voice</span>
+              </button>
+
+              <button id="actFile" class="copy-btn" title="Attach File (or Drag & Drop)">
+                <svg viewBox="0 0 24 24" width="12" height="12"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="btn-label" id="lblActFile">File</span>
+              </button>
+
+              <button id="actColor" class="copy-btn" title="Branch Color">
+                <span id="actColorDot" class="status-color-dot"></span>
+                <span class="btn-label" id="lblActColor">Color</span>
+              </button>
+
+              <button id="actCollapse" class="copy-btn" title="Fold / Unfold Sub-branches (Space)">
+                <span class="btn-label" id="lblActCollapse">Fold</span>
+              </button>
+
+              <button id="actDelete" class="copy-btn danger-btn" title="Delete Selected Branch (Delete)">
+                <svg viewBox="0 0 24 24" width="12" height="12"><polyline points="3 6 5 6 21 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                <span class="btn-label" id="lblActDelete">Delete</span>
+              </button>
+            </div>
+          </div>
+        </footer>
+      </main>
+    </div>
+  </div>
+
+  <!-- Popover: + Branch Type Picker (Text / Image / Video / Voice / File boxes) -->
+  <div id="addTypePopover" class="add-type-popover hidden">
+    <div class="add-type-grid">
+      <button class="add-type-card" data-ntype="text" id="btnAddTypeText">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 7V4h16v3"/>
+          <path d="M9 20h6"/>
+          <path d="M12 4v16"/>
+        </svg>
+        <span id="lblAddTypeText">Text</span>
+      </button>
+      <button class="add-type-card" data-ntype="image" id="btnAddTypeImage">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2.5"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+        <span id="lblAddTypeImage">Image</span>
+      </button>
+      <button class="add-type-card" data-ntype="video" id="btnAddTypeVideo">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="5" width="15" height="14" rx="2.5"/>
+          <polygon points="22 7 17 12 22 17 22 7"/>
+        </svg>
+        <span id="lblAddTypeVideo">Video</span>
+      </button>
+      <button class="add-type-card" data-ntype="voice" id="btnAddTypeVoice">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+        <span id="lblAddTypeVoice">Voice</span>
+      </button>
+      <button class="add-type-card" data-ntype="file" id="btnAddTypeFile">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <polyline points="9 15 12 12 15 15"/>
+        </svg>
+        <span id="lblAddTypeFile">File</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Popover: Color Picker for Node -->
+  <div id="colorPopover" class="ctx-menu hidden">
+    <div class="ctx-label" id="lblBranchColor">Branch Color</div>
+    <div id="colorGrid" class="color-swatch-grid"></div>
+  </div>
+
+  <!-- Popover: Layout Picker -->
+  <div id="layoutPopover" class="ctx-menu hidden">
+    <div class="ctx-label" id="lblLayoutMode">Default Branch Direction</div>
+    <div class="ctx-item" data-layout="balanced" id="optLayoutBalanced">↔ Balanced (Left & Right)</div>
+    <div class="ctx-item" data-layout="right" id="optLayoutRight">→ Right Only</div>
+    <div class="ctx-item" data-layout="left" id="optLayoutLeft">← Left Only</div>
+    <div class="ctx-item" data-layout="down" id="optLayoutDown">↓ Downward (Tree)</div>
+  </div>
+
+  <!-- Context Menu for Nodes & Tabs -->
+  <div id="contextMenu" class="ctx-menu hidden"></div>
+
+  <!-- AI Mind Map Generator Modal -->
+  <div id="aiModal" class="modal-backdrop hidden">
+    <div class="settings-card ai-modal-card">
+      <div class="settings-header">
+        <span class="settings-title" id="aiModalTitle">✨ AI Mind Map Generator</span>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <button id="aiOpenSettingsBtn" class="copy-btn" title="Configure AI Provider & Key">⚙ AI Settings</button>
+          <button id="aiModalCloseBtn" class="win-btn">✕</button>
+        </div>
+      </div>
+      <div class="settings-body">
+        <div class="set-section">
+          <div class="set-label" id="lblAiPromptInput">WHAT SHOULD WE MAP OUT?</div>
+          <textarea id="aiPromptTextarea" class="ai-prompt-textarea" rows="4" placeholder="Describe a topic, project, study plan, or paste notes... (English or Persian)"></textarea>
+        </div>
+
+        <div class="set-section">
+          <div class="set-label" id="lblAiTargetMode">TARGET</div>
+          <div class="seg" id="aiTargetSeg">
+            <button class="seg-btn active" data-target="new" id="btnAiTargetNew">Create New Mind Map</button>
+            <button class="seg-btn" data-target="expand" id="btnAiTargetExpand">Expand Selected Branch</button>
+          </div>
+        </div>
+
+        <div id="aiModalStatus" class="ai-status-msg hidden"></div>
+
+        <div class="modal-footer-actions">
+          <button id="aiCancelBtn" class="copy-btn">Cancel</button>
+          <button id="aiGenerateSubmitBtn" class="copy-btn copy-btn--wide ai-submit-btn">
+            <span>✨</span>
+            <span id="lblAiGenerateBtn">Generate Mind Map</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings & AI Modal (NotePrompt style) -->
+  <div id="settingsModal" class="modal-backdrop hidden">
+    <div class="settings-card">
+      <div class="settings-header">
+        <span class="settings-title" id="settingsModalTitle">settings</span>
+        <button id="settingsCloseBtn" class="win-btn">✕</button>
+      </div>
+      <div class="settings-body">
+        <!-- Language (English / Persian) + NotePrompt RTL Mirror -->
+        <div class="set-section">
+          <div class="set-label" id="lblSetLanguage">LANGUAGE / زبان</div>
+          <div class="seg" id="settingsLangSeg">
+            <button class="seg-btn active" data-lang="en">English</button>
+            <button class="seg-btn" data-lang="fa">فارسی</button>
+          </div>
+          <div class="set-toggle-row" id="rtlMirrorRow">
+            <div class="set-toggle-text">
+              <span id="lblRtlMirrorTitle">Mirror layout (RTL)</span>
+              <small id="lblRtlMirrorHint">Moves the sidebar to the right and flips the whole layout</small>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggleRtlMirror" />
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Theme (Only Dark & Light) -->
+        <div class="set-section">
+          <div class="set-label" id="lblSetTheme">THEME</div>
+          <div class="seg" id="settingsThemeSeg">
+            <button class="seg-btn active" data-theme="dark" id="btnThemeDark">⬛ Dark (Black)</button>
+            <button class="seg-btn" data-theme="light" id="btnThemeLight">⬜ Light (White)</button>
+          </div>
+        </div>
+
+        <!-- Default Layout -->
+        <div class="set-section">
+          <div class="set-label" id="lblSetLayout">DEFAULT LAYOUT</div>
+          <div class="seg" id="settingsLayoutSeg">
+            <button class="seg-btn" data-layout="balanced" id="segBtnBalanced">↔ Balanced</button>
+            <button class="seg-btn" data-layout="right" id="segBtnRight">→ Right</button>
+            <button class="seg-btn" data-layout="left" id="segBtnLeft">← Left</button>
+            <button class="seg-btn" data-layout="down" id="segBtnDown">↓ Down</button>
+          </div>
+        </div>
+
+        <!-- AI Provider & API Key Setup (NotePrompt compatible) -->
+        <div class="set-section ai-config-box">
+          <div class="set-label-row">
+            <span class="set-label" id="lblSetAiHeader">AI CONNECTION (NOTEPROMPT LINK)</span>
+            <button id="btnSyncNotePromptAi" class="copy-btn" title="Import saved AI key from NotePrompt">🔗 Sync from NotePrompt</button>
+          </div>
+
+          <div class="set-field-row">
+            <label class="set-field-label" id="lblAiProvider">Provider</label>
+            <select id="aiProviderSelect" class="set-select">
+              <option value="openrouter">OpenRouter (Free & Paid models)</option>
+              <option value="google">Google AI Studio (Gemini)</option>
+              <option value="openai">OpenAI (GPT)</option>
+              <option value="anthropic">Anthropic (Claude)</option>
+              <option value="custom">Custom Endpoint (Ollama / Local)</option>
+            </select>
+          </div>
+
+          <div class="set-field-row">
+            <label class="set-field-label" id="lblAiModel">Model</label>
+            <select id="aiModelSelect" class="set-select"></select>
+            <button id="aiModelRefreshBtn" class="copy-btn" title="Fetch models from provider">↻</button>
+          </div>
+
+          <div id="aiKeyRow" class="set-field-row">
+            <label class="set-field-label" id="lblAiKey">API Key</label>
+            <input id="aiApiKeyInput" type="password" class="set-input" placeholder="Paste API key here..." autocomplete="off" spellcheck="false" />
+          </div>
+
+          <div id="aiCustomRows" class="hidden">
+            <div class="set-field-row">
+              <label class="set-field-label">Endpoint URL</label>
+              <input id="aiCustomUrlInput" type="text" class="set-input" placeholder="http://localhost:11434/v1/chat/completions" spellcheck="false" />
+            </div>
+            <div class="set-field-row" style="margin-top:6px;">
+              <label class="set-field-label">Models</label>
+              <input id="aiCustomModelsInput" type="text" class="set-input" placeholder="llama3.2, qwen2.5" spellcheck="false" />
+            </div>
+          </div>
+
+          <div id="aiConfigHint" class="set-hint">
+            Keys are stored locally on your device. If you use NotePrompt, click "Sync from NotePrompt" to link your key automatically.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox Modal for Attached Images -->
+  <div id="lightboxModal" class="modal-backdrop hidden">
+    <div class="lightbox-card">
+      <div class="settings-header">
+        <span id="lightboxTitle" class="settings-title">Image Preview</span>
+        <div class="lightbox-actions">
+          <button id="lightboxOpenOs" class="copy-btn">Open in Windows</button>
+          <button id="lightboxReveal" class="copy-btn">Show in Folder</button>
+          <button id="lightboxClose" class="win-btn">✕</button>
+        </div>
+      </div>
+      <div class="lightbox-body">
+        <img id="lightboxImg" src="" alt="Preview" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Shortcuts / Help Modal -->
+  <div id="helpModal" class="modal-backdrop hidden">
+    <div class="settings-card">
+      <div class="settings-header">
+        <span class="settings-title" id="helpModalTitle">Shortcuts & Quick Guide</span>
+        <button id="helpCloseBtn" class="win-btn">✕</button>
+      </div>
+      <div class="settings-body help-list" id="helpListBody"></div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

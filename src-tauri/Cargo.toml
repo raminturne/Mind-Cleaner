@@ -1,0 +1,26 @@
+[package]
+name = "mind-cleaner"
+version = "0.2.0"
+description = "برنامه نقشه ذهنی (Mind Map) سبک و سریع با Rust"
+authors = ["Mind Cleaner"]
+license = "MIT"
+repository = "https://github.com/raminturne/Mind-Cleaner"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["custom-protocol"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rfd = "0.16"
+base64 = "0.22"
+dirs = "6"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true
