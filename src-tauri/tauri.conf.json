@@ -1,10 +1,10 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Mind Cleaner",
-  "version": "0.2.0",
+  "version": "0.4.7",
   "identifier": "com.mindcleaner.desktop",
   "build": {
-    "frontendDist": "../ui"
+    "frontendDist": "../studio"
   },
   "app": {
     "withGlobalTauri": true,
@@ -18,6 +18,7 @@
         "minHeight": 520,
         "resizable": true,
         "decorations": false,
+        "dragDropEnabled": false,
         "center": true
       }
     ],
@@ -29,14 +30,14 @@
     "active": true,
     "targets": "all",
     "category": "Productivity",
-    "shortDescription": "Fast, light mind-map app with AI generation",
-    "longDescription": "Mind Cleaner is a fast and lightweight mind-map desktop app (Rust + Tauri) with AI map generation, rich attachments, Persian/English UI and PNG/Markdown export.",
+    "shortDescription": "A calm canvas for connected thoughts",
+    "longDescription": "Mind Cleaner Studio is a local-first desktop mind-mapping app with flexible branch styles, spring motion, rich attachments, an English interface with multilingual map text, AI draft previews, and PNG/Markdown/JSON export.",
     "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
+      "icons-studio/32x32.png",
+      "icons-studio/128x128.png",
+      "icons-studio/128x128@2x.png",
+      "icons-studio/icon.icns",
+      "icons-studio/icon.ico"
     ]
   }
 }

@@ -8,6 +8,7 @@ use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
+mod ai;
 
 #[cfg(windows)]
 const CREATE_NO_WINDOW: u32 = 0x08000000;
@@ -43,6 +44,15 @@ pub struct AttachmentInfo {
 /// Portable mode: if a `data` folder sits next to the executable it is used as-is.
 /// Otherwise data lives in the per-user application data directory.
 fn get_app_data_dir() -> PathBuf {
+    static DATA_DIR: std::sync::OnceLock<PathBuf> = std::sync::OnceLock::new();
+    let dir = DATA_DIR.get_or_init(resolve_app_data_dir).clone();
+    // Keep the chosen portable directory for the whole session, even if it is
+    // temporarily removed. Never switch into another workspace during a save.
+    let _ = fs::create_dir_all(dir.join("attachments"));
+    dir
+}
+
+fn resolve_app_data_dir() -> PathBuf {
     if let Ok(exe_path) = std::env::current_exe() {
         if let Some(exe_dir) = exe_path.parent() {
             let portable = exe_dir.join("data");
@@ -207,6 +217,77 @@ fn save_workspace(data: serde_json::Value) -> Result<String, String> {
     Ok(workspace_file.to_string_lossy().to_string())
 }
 
+// Studio uses its own workspace. Opening the new UI never overwrites the legacy file.
+#[tauri::command]
+fn load_studio_workspace() -> Result<WorkspaceResponse, String> {
+    let data_dir = get_app_data_dir();
+    let studio = data_dir.join("studio-workspace.json");
+    let legacy = data_dir.join("workspace.json");
+    let path = if studio.exists() { studio } else { legacy };
+    let data = if path.exists() {
+        let raw = fs::read_to_string(&path).map_err(|e| e.to_string())?;
+        Some(serde_json::from_str(&raw)
+            .map_err(|e| format!("Workspace could not be read. Original file preserved: {}", e))?)
+    } else { None };
+    Ok(WorkspaceResponse { data, data_dir: data_dir.to_string_lossy().to_string() })
+}
+
+#[tauri::command]
+fn save_studio_workspace(data: serde_json::Value) -> Result<String, String> {
+    let data_dir = get_app_data_dir();
+    fs::create_dir_all(&data_dir).map_err(|e| e.to_string())?;
+    let path = data_dir.join("studio-workspace.json");
+    let temp = data_dir.join("studio-workspace.json.tmp");
+    let bytes = serde_json::to_vec_pretty(&data).map_err(|e| e.to_string())?;
+    // Sync the complete new file before replacement; retain the last successful version.
+    use std::io::Write;
+    let mut file = fs::File::create(&temp).map_err(|e| e.to_string())?;
+    file.write_all(&bytes).map_err(|e| e.to_string())?;
+    file.sync_all().map_err(|e| e.to_string())?;
+    drop(file);
+    if path.exists() {
+        fs::copy(&path, data_dir.join("studio-workspace.backup.json")).map_err(|e| e.to_string())?;
+    }
+    fs::rename(&temp, &path).map_err(|e| e.to_string())?;
+    Ok(path.to_string_lossy().to_string())
+}
+
+// Canvas saves separately and imports both earlier workspace formats.
+#[tauri::command]
+fn load_canvas_workspace() -> Result<WorkspaceResponse, String> {
+    let data_dir = get_app_data_dir();
+    let studio = data_dir.join("canvas-workspace.json");
+    let previous = data_dir.join("studio-workspace.json");
+    let legacy = if previous.exists() { previous } else { data_dir.join("workspace.json") };
+    let path = if studio.exists() { studio } else { legacy };
+    let data = if path.exists() {
+        let raw = fs::read_to_string(&path).map_err(|e| e.to_string())?;
+        Some(serde_json::from_str(&raw)
+            .map_err(|e| format!("Workspace could not be read. Original file preserved: {}", e))?)
+    } else { None };
+    Ok(WorkspaceResponse { data, data_dir: data_dir.to_string_lossy().to_string() })
+}
+
+#[tauri::command]
+fn save_canvas_workspace(data: serde_json::Value) -> Result<String, String> {
+    let data_dir = get_app_data_dir();
+    fs::create_dir_all(&data_dir).map_err(|e| e.to_string())?;
+    let path = data_dir.join("canvas-workspace.json");
+    let temp = data_dir.join("canvas-workspace.json.tmp");
+    let bytes = serde_json::to_vec_pretty(&data).map_err(|e| e.to_string())?;
+    // Sync the complete new file before replacement; retain the last successful version.
+    use std::io::Write;
+    let mut file = fs::File::create(&temp).map_err(|e| e.to_string())?;
+    file.write_all(&bytes).map_err(|e| e.to_string())?;
+    file.sync_all().map_err(|e| e.to_string())?;
+    drop(file);
+    if path.exists() {
+        fs::copy(&path, data_dir.join("canvas-workspace.backup.json")).map_err(|e| e.to_string())?;
+    }
+    fs::rename(&temp, &path).map_err(|e| e.to_string())?;
+    Ok(path.to_string_lossy().to_string())
+}
+
 #[tauri::command]
 fn load_noteprompt_ai() -> Result<Option<serde_json::Value>, String> {
     if let Some(roaming) = dirs::config_dir() {
@@ -235,7 +316,7 @@ fn save_project_dialog(content: String, default_name: String) -> Result<Option<S
     };
 
     let file = rfd::FileDialog::new()
-        .set_title("ذخیره فایل نقشه ذهنی (Save Mind Map)")
+        .set_title("Save Mind Map")
         .set_file_name(&safe_name)
         .add_filter("Mind Map JSON (*.json)", &["json"])
         .save_file();
@@ -251,7 +332,7 @@ fn save_project_dialog(content: String, default_name: String) -> Result<Option<S
 #[tauri::command]
 fn open_project_dialog() -> Result<Option<LoadedProjectFile>, String> {
     let file = rfd::FileDialog::new()
-        .set_title("باز کردن فایل نقشه ذهنی (Open Mind Map)")
+        .set_title("Open Mind Map")
         .add_filter("Mind Map JSON (*.json)", &["json"])
         .pick_file();
 
@@ -334,9 +415,9 @@ fn process_file_from_path(
 #[tauri::command]
 fn pick_image_dialog() -> Result<Option<AttachmentInfo>, String> {
     let file = rfd::FileDialog::new()
-        .set_title("انتخاب تصویر برای شاخه (Select Image)")
+        .set_title("Select Image")
         .add_filter(
-            "تصاویر (PNG, JPG, WEBP, GIF, SVG)",
+            "Images (PNG, JPG, WEBP, GIF, SVG)",
             &["png", "jpg", "jpeg", "webp", "gif", "svg", "bmp"],
         )
         .pick_file();
@@ -352,7 +433,7 @@ fn pick_image_dialog() -> Result<Option<AttachmentInfo>, String> {
 #[tauri::command]
 fn pick_video_dialog() -> Result<Option<AttachmentInfo>, String> {
     let file = rfd::FileDialog::new()
-        .set_title("انتخاب ویدیو برای شاخه (Select Video)")
+        .set_title("Select Video")
         .add_filter(
             "ویدیوها (MP4, WEBM, MKV, MOV, AVI)",
             &["mp4", "webm", "mkv", "mov", "avi", "m4v", "ogv"],
@@ -370,7 +451,7 @@ fn pick_video_dialog() -> Result<Option<AttachmentInfo>, String> {
 #[tauri::command]
 fn pick_audio_dialog() -> Result<Option<AttachmentInfo>, String> {
     let file = rfd::FileDialog::new()
-        .set_title("انتخاب ویس / فایل صوتی برای شاخه (Select Voice / Audio)")
+        .set_title("Select Voice / Audio")
         .add_filter(
             "فایل‌های صوتی (MP3, WAV, OGG, M4A, AAC, FLAC, OPUS)",
             &["mp3", "wav", "ogg", "m4a", "aac", "flac", "opus", "weba", "wma", "webm"],
@@ -388,8 +469,8 @@ fn pick_audio_dialog() -> Result<Option<AttachmentInfo>, String> {
 #[tauri::command]
 fn pick_file_dialog() -> Result<Option<AttachmentInfo>, String> {
     let file = rfd::FileDialog::new()
-        .set_title("انتخاب فایل ضمیمه برای شاخه (Select File)")
-        .add_filter("همه فایل‌ها (*.*)", &["*"])
+        .set_title("Select File")
+        .add_filter("All files (*.*)", &["*"])
         .pick_file();
 
     if let Some(path) = file {
@@ -561,7 +642,7 @@ fn export_png_dialog(base64_png: String, default_name: String) -> Result<Option<
     };
 
     let file = rfd::FileDialog::new()
-        .set_title("ذخیره تصویر نقشه ذهنی (Export PNG)")
+        .set_title("Export PNG")
         .set_file_name(&safe_name)
         .add_filter("PNG Image (*.png)", &["png"])
         .save_file();
@@ -584,7 +665,20 @@ fn export_png_dialog(base64_png: String, default_name: String) -> Result<Option<
 
 fn main() {
     tauri::Builder::default()
+        .manage(ai::Requests::default())
+        .setup(|app| {
+            use tauri::Manager;
+            if let (Some(window), Some(icon)) = (app.get_webview_window("main"), app.default_window_icon()) {
+                window.set_icon(icon.clone())?;
+            }
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
+            ai::ai_http,
+            ai::cancel_ai_request,
+            ai::load_ai_settings,
+            ai::save_ai_settings,
+            ai::import_promptpad_ai,
             win_minimize,
             win_toggle_maximize,
             win_close,
@@ -593,6 +687,10 @@ fn main() {
             win_start_drag,
             load_workspace,
             save_workspace,
+            load_studio_workspace,
+            save_studio_workspace,
+            load_canvas_workspace,
+            save_canvas_workspace,
             load_noteprompt_ai,
             save_project_dialog,
             open_project_dialog,

@@ -1,15 +1,20 @@
 {
   "name": "mind-cleaner",
-  "version": "0.2.0",
+  "version": "0.4.7",
   "private": true,
   "license": "MIT",
   "scripts": {
     "tauri": "tauri",
     "dev": "tauri dev",
     "build": "tauri build",
-    "icon": "tauri icon src-tauri/icons/icon.png"
+    "icon": "tauri icon design/icon-concepts/02-clear-head.png --output src-tauri/icons-studio",
+    "preview": "node scripts/preview.mjs",
+    "test": "node --test tests/model.test.mjs tests/ai.test.mjs",
+    "test:ui": "playwright test"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2"
+    "@playwright/test": "^1.64.1",
+    "@tauri-apps/cli": "^2",
+    "prettier": "^3.9.10"
   }
 }

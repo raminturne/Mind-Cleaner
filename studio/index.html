@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Mind Cleaner</title>
+    <link rel="icon" href="favicon.png" type="image/png" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="quiet.css" />
+  </head>
+  <body>
+    <header id="titlebar">
+      <button class="brand" data-action="maps" title="Your saved maps">
+        <span class="brand-mark" data-icon="mind"></span
+        ><span>mindcleaner</span>
+      </button>
+      <div class="header-spacer" data-tauri-drag-region></div>
+      <button id="documentTitle" class="document-title" data-action="rename">
+        Untitled
+      </button>
+      <div class="header-spacer" data-tauri-drag-region></div>
+      <button id="recordingStop" data-action="record" hidden>
+        Stop recording
+      </button>
+      <button
+        id="saveState"
+        class="save-state"
+        data-action="save"
+        title="Save now"
+      >
+        Opening workspace
+      </button>
+      <div class="window-controls" id="windowControls">
+        <button
+          data-action="minimize"
+          aria-label="Minimize"
+          data-icon="minus"
+        ></button
+        ><button
+          data-action="maximize"
+          aria-label="Maximize"
+          data-icon="square"
+        ></button
+        ><button
+          data-action="close"
+          aria-label="Close"
+          data-icon="close"
+        ></button>
+      </div>
+    </header>
+    <main id="workspace">
+      <div
+        id="viewport"
+        tabindex="0"
+        aria-label="Thought canvas. Double-click or press N to create a thought. Scroll to zoom."
+      >
+        <div id="world">
+          <svg id="edges" aria-hidden="true"></svg>
+          <div id="nodes"></div>
+        </div>
+        <div id="marquee" hidden></div>
+        <div id="dropPreview" hidden>
+          <span>Release to make a subtopic</span>
+          <div class="drop-ghost">Subtopic</div>
+        </div>
+      </div>
+      <div id="emptyCanvas">
+        <p>Double-click anywhere to start</p>
+        <small>or press <kbd>N</kbd></small>
+      </div>
+      <div id="island" aria-label="Floating tool island">
+        <nav class="tool-rail" aria-label="Canvas tools">
+          <button
+            class="active"
+            data-action="select"
+            aria-label="Select tool"
+            title="Select · V"
+            data-icon="cursor"
+          ></button>
+          <button
+            data-action="add"
+            aria-label="Add thought"
+            title="Add thought · N / Child · Tab"
+            data-icon="plus"
+          ></button>
+          <button
+            data-action="hand"
+            aria-label="Hand tool"
+            title="Move canvas · H / Space + drag"
+            data-icon="hand"
+          ></button>
+          <button
+            data-action="attach"
+            aria-label="Attach file"
+            title="Attach to selected thought"
+            data-icon="clip"
+          ></button>
+          <button
+            data-action="tidy"
+            aria-label="Auto arrange"
+            title="Auto arrange"
+            data-icon="map"
+          ></button>
+          <span class="separator"></span>
+          <button
+            data-action="undo"
+            aria-label="Undo"
+            title="Undo · Ctrl+Z"
+            data-icon="undo"
+          ></button>
+          <button
+            data-action="menu"
+            id="menuToggle"
+            aria-label="More tools"
+            aria-expanded="false"
+            title="More tools"
+            data-icon="more"
+          ></button>
+        </nav>
+        <div id="islandMenu" hidden>
+          <div class="island-heading">Your space</div>
+          <button data-action="newMap">
+            <span data-icon="plus"></span>New canvas</button
+          ><button data-action="maps">
+            <span data-icon="layers"></span>Saved maps
+            <span id="mapCount" class="count" aria-hidden="true"></span></button
+          ><button data-action="search">
+            <span data-icon="search"></span>Find a thought</button
+          ><button data-action="details" id="thoughtDetails" hidden>
+            <span data-icon="note"></span>Thought details</button
+          ><button data-action="settings">
+            <span data-icon="settings"></span>Appearance</button
+          ><button data-action="ai">
+            <span data-icon="spark"></span>AI assistant</button
+          ><button data-action="export">
+            <span data-icon="export"></span>Export</button
+          ><button data-action="outline">
+            <span data-icon="list"></span>Outline</button
+          ><button data-action="redo"><span data-icon="redo"></span>Redo</button
+          ><button data-action="shortcuts">
+            <span data-icon="note"></span>Shortcuts
+          </button>
+          <div class="island-zoom">
+            <button
+              data-action="zoomOut"
+              aria-label="Zoom out"
+              data-icon="minus"
+            ></button
+            ><button id="zoomLabel" data-action="resetZoom">100%</button
+            ><button
+              data-action="zoomIn"
+              aria-label="Zoom in"
+              data-icon="plus"
+            ></button
+            ><button
+              data-action="fit"
+              aria-label="Fit view"
+              title="Fit view"
+              data-icon="fit"
+            ></button>
+          </div>
+        </div>
+      </div>
+      <div id="outline" hidden></div>
+      <aside
+        id="panel"
+        class="panel"
+        hidden
+        aria-label="Workspace panel"
+      ></aside>
+      <div id="thoughtMenu" role="group" hidden></div>
+      <button class="focus-exit floating" data-action="focus">
+        Exit focus <kbd>Esc</kbd></button
+      ><span id="mapStats" hidden></span>
+    </main>
+    <dialog id="dialog"></dialog>
+    <div id="toasts" aria-live="polite"></div>
+    <script type="module" src="app.mjs"></script>
+  </body>
+</html>
